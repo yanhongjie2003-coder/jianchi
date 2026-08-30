@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f6f2ec">
+<title>简持</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- ================= 首页 ================= -->
+  <section class="view active" id="view-home" aria-label="首页">
+    <header class="topbar">
+      <div class="row">
+        <div>
+          <h1>简持</h1>
+          <div class="date-line" id="dateLine"></div>
+        </div>
+        <span class="chip" id="energyChip" title="能量"></span>
+      </div>
+    </header>
+    <div class="hero">
+      <div class="sub">今日完成度</div>
+      <div class="big" id="heroPct">0%</div>
+      <div class="sub" id="heroDesc"></div>
+      <svg class="ring" width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">
+        <circle cx="42" cy="42" r="34" stroke="rgba(255,255,255,.25)" stroke-width="8" fill="none"/>
+        <circle id="heroRing" cx="42" cy="42" r="34" stroke="#fff" stroke-width="8" fill="none"
+          stroke-linecap="round" stroke-dasharray="213.6" stroke-dashoffset="213.6"
+          transform="rotate(-90 42 42)" style="transition:stroke-dashoffset .8s var(--ease-emph)"/>
+      </svg>
+    </div>
+    <div class="section-title">今日目标 <small id="goalCount"></small></div>
+    <div id="goalList"></div>
+  </section>
+
+  <!-- ================= 统计 ================= -->
+  <section class="view" id="view-stats" aria-label="统计">
+    <header class="topbar">
+      <div class="row"><h1>统计</h1><div class="month-nav"><button class="mn-btn" id="monthPrev" aria-label="上一月">‹</button><span class="chip" id="monthChip"></span><button class="mn-btn" id="monthNext" aria-label="下一月">›</button></div></div>
+    </header>
+    <div class="stat-row" id="statRow"></div>
+    <div class="card">
+      <div class="section-title" style="margin:0 0 4px">本周概览 <small id="weekSummary"></small></div>
+      <div class="week-strip" id="weekStrip"></div>
+    </div>
+    <div class="card">
+      <b style="font-size:15px" id="heatTitle">本月热力图</b>
+      <div class="heat-grid" id="heatGrid"></div>
+      <div id="heatDetail" class="heat-detail" hidden></div>
+      <div class="legend">少 <i style="background:var(--surface-container-highest)"></i><i class="heat l1" style="aspect-ratio:auto;width:12px"></i><i class="heat l2" style="aspect-ratio:auto;width:12px"></i><i class="heat l3" style="aspect-ratio:auto;width:12px"></i> 多</div>
+    </div>
+    <div class="card">
+      <div class="section-title" style="margin:0 0 4px">目标完成率<small id="perGoalMonth">本月</small></div>
+      <div id="perGoalList"></div>
+    </div>
+  </section>
+
+  <!-- ================= 成就 ================= -->
+  <section class="view" id="view-awards" aria-label="成就">
+    <header class="topbar"><div class="row"><h1>成就</h1></div></header>
+    <div class="level-card">
+      <div class="level-badge" id="levelIcon"></div>
+      <div style="font-weight:900;font-size:20px" id="levelName"></div>
+      <div style="font-size:13px;font-weight:600;margin-top:4px" id="levelNext"></div>
+      <div style="background:rgba(0,0,0,.14);border-radius:4px;height:10px;margin-top:12px;overflow:hidden">
+        <div id="levelBar" style="width:0%;height:100%;background:var(--tertiary);border-radius:4px;transition:width .8s var(--ease-emph)"></div>
+      </div>
+    </div>
+    <div class="section-title">我的徽章 <small id="badgeCount"></small></div>
+    <div class="card"><div class="badge-grid" id="badgeGrid"></div></div>
+    <div class="card" style="text-align:center;padding:24px">
+      <div id="highlightIcon" style="display:flex;justify-content:center;margin-bottom:8px"></div>
+      <b style="display:block;margin-bottom:4px;font-size:16px" id="highlightTitle"></b>
+      <span style="font-size:13px;color:var(--on-surface-variant)">只和昨天的自己比，稳稳地向前 🌱</span>
+    </div>
+  </section>
+
+  <!-- ================= 我的 ================= -->
+  <section class="view" id="view-me" aria-label="我的">
+    <header class="topbar"><div class="row"><h1>我的</h1></div></header>
+    <div class="card me-head">
+      <button class="profile-btn" id="profileBtn" aria-label="编辑名字和头像">
+        <span class="avatar" id="meAvatar">拾</span>
+        <span class="profile-info">
+          <b style="font-size:17px" id="meName">拾光者</b>
+          <span style="font-size:13px;color:var(--on-surface-variant);font-weight:600;margin-top:2px" id="meLevel"></span>
+        </span>
+        <span class="profile-pencil" id="profilePencil" aria-hidden="true"></span>
+      </button>
+    </div>
+    <div class="section-title">外观</div>
+    <div class="card">
+      <div class="me-row">
+        <div>
+          <div class="lb">主题色</div>
+          <div class="hint">Material You 动态取色</div>
+        </div>
+        <div style="display:flex;gap:8px" id="seedRow"></div>
+      </div>
+      <div class="me-row">
+        <div>
+          <div class="lb">深色模式</div>
+          <div class="hint">跟随系统或手动切换</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="darkToggle" aria-label="深色模式"><span class="track"></span><span class="thumb"></span></label>
+      </div>
+      <div class="me-row">
+        <div>
+          <div class="lb">减少动效</div>
+          <div class="hint">关闭弹跳与彩带动画</div>
+        </div>
+        <label class="switch"><input type="checkbox" id="motionToggle" aria-label="减少动效"><span class="track"></span><span class="thumb"></span></label>
+      </div>
+    </div>
+    <div class="section-title">数据</div>
+    <div class="card">
+      <div class="me-row">
+        <div><div class="lb">导出数据</div><div class="hint">下载 JSON 备份</div></div>
+        <button class="btn btn-tonal" id="exportBtn" style="height:42px">导出</button>
+      </div>
+      <div class="me-row">
+        <div><div class="lb">导入数据</div><div class="hint">从 JSON 备份恢复</div></div>
+        <button class="btn btn-tonal" id="importBtn" style="height:42px">导入</button>
+        <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+      </div>
+      <div class="me-row">
+        <div><div class="lb">清空数据</div><div class="hint">删除全部目标与记录</div></div>
+        <button class="btn btn-tonal" id="clearBtn" style="height:42px">清空</button>
+      </div>
+      <div class="me-row">
+        <div><div class="lb">重置演示数据</div><div class="hint">恢复到初始状态</div></div>
+        <button class="btn btn-tonal" id="resetBtn" style="height:42px">重置</button>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:12px;color:var(--on-surface-variant);margin-top:20px;line-height:1.8">
+      简持 · 个人习惯打卡应用<br>所有数据仅保存在本机浏览器,不会上传至任何服务器
+    </p>
+  </section>
+
+  <!-- 底部导航 + FAB -->
+  <nav class="navbar" aria-label="底部导航">
+    <button class="nav-item active" data-view="home" aria-label="首页">
+      <span class="pill" data-ico="home"></span><span>首页</span>
+    </button>
+    <button class="nav-item" data-view="stats" aria-label="统计">
+      <span class="pill" data-ico="stats"></span><span>统计</span>
+    </button>
+    <span class="fab-slot">
+      <button class="fab" id="fabBtn" aria-label="创建目标"></button>
+    </span>
+    <button class="nav-item" data-view="awards" aria-label="成就">
+      <span class="pill" data-ico="trophy"></span><span>成就</span>
+    </button>
+    <button class="nav-item" data-view="me" aria-label="我的">
+      <span class="pill" data-ico="person"></span><span>我的</span>
+    </button>
+  </nav>
+
+  <div class="scrim" id="scrim"></div>
+
+  <!-- 创建目标弹层 -->
+  <div class="sheet" id="createSheet" role="dialog" aria-modal="true" aria-label="创建新目标">
+    <div class="drag-handle"></div>
+    <h2 id="sheetTitle">创建新目标 ✨</h2>
+    <label class="field-label" for="goalNameInput">目标名称</label>
+    <input class="text-field" id="goalNameInput" maxlength="20" placeholder="例如：每天背 20 个单词">
+    <span class="field-label">选个图标</span>
+    <div class="icon-row" id="iconRow"></div>
+    <span class="field-label">完成周期</span>
+    <div class="seg" id="freqSeg">
+      <button class="sel" data-freq="daily">每天</button>
+      <button data-freq="weekly">每周</button>
+      <button data-freq="monthly">每月</button>
+    </div>
+    <div class="stepper" id="freqStepper" style="margin-top:14px">
+      <span style="font-size:13px;color:var(--on-surface-variant);font-weight:600" id="stepLabel">每周完成</span>
+      <button class="step-btn" id="stepMinus" aria-label="减少">−</button>
+      <b id="stepVal">5</b>
+      <button class="step-btn" id="stepPlus" aria-label="增加">＋</button>
+      <span style="font-size:13px;color:var(--on-surface-variant);font-weight:600">次</span>
+    </div>
+    <div class="stepper" id="dailyCountRow" style="margin-top:14px;display:none">
+      <span style="font-size:13px;color:var(--on-surface-variant);font-weight:600">每日次数</span>
+      <button class="step-btn" id="cntMinus" aria-label="减少次数">−</button>
+      <b id="cntVal">1</b>
+      <button class="step-btn" id="cntPlus" aria-label="增加次数">＋</button>
+      <span style="font-size:13px;color:var(--on-surface-variant);font-weight:600">次（如喝水 8 杯）</span>
+    </div>
+    <div class="freq-hint" id="freqHint"></div>
+    <button class="btn btn-filled btn-block" id="createBtn" style="margin-top:18px;height:54px">创建目标 🚀</button>
+    <button class="btn btn-danger-text btn-block" id="delGoalBtn" style="margin-top:8px;height:48px;display:none">删除目标</button>
+  </div>
+
+  <!-- 编辑资料弹层 -->
+  <div class="sheet" id="profileSheet" role="dialog" aria-modal="true" aria-label="编辑资料">
+    <div class="drag-handle"></div>
+    <h2>编辑资料 ✏️</h2>
+    <span class="field-label">选个头像</span>
+    <div class="icon-row" id="avatarRow"></div>
+    <label class="field-label" for="profileNameInput">名字</label>
+    <input class="text-field" id="profileNameInput" maxlength="12" placeholder="给自己起个名字">
+    <button class="btn btn-filled btn-block" id="profileSaveBtn" style="margin-top:18px;height:54px">保存资料</button>
+  </div>
+
+  <!-- 庆祝弹层 -->
+  <div class="cele-mask" id="celeMask">
+    <div class="cele" role="dialog" aria-modal="true" aria-label="打卡成功">
+      <div class="medal" id="celeIcon"></div>
+      <h3 id="celeTitle">打卡成功！</h3>
+      <p id="celeSub">又向目标迈进了一步</p>
+      <div class="streak-line" id="celeLine"></div>
+      <button class="btn btn-text btn-block" id="celeUndo">撤销本次打卡</button>
+      <button class="btn btn-filled btn-block" id="celeOk">太棒了！</button>
+    </div>
+  </div>
+
+  <div class="snackbar" id="snackbar"><span id="snackMsg"></span><button id="snackAct"></button></div>
+  <canvas id="confetti"></canvas>
+</div>
+
+
+  <script src="js/utils.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/theme.js"></script>
+  <script src="js/domain.js"></script>
+  <script src="js/badges.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
