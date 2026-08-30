@@ -23,6 +23,12 @@ jobs:
         with:
           gradle-version: '8.10.2'
 
+      - name: Cache debug keystore (保持各次构建签名一致,支持覆盖安装)
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: jianchi-debug-keystore
+
       - name: Build debug APK
         run: gradle -p android assembleDebug --no-daemon
 
