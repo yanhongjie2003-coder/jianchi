@@ -27,11 +27,18 @@ $("#monthNext").onclick=()=>{ let [y,m]=curStatsYM(); const t=TODATE0(); m++; if
 
 /* 打卡 */
 let lastCheck=null;
+function markDaySlot(g,t){                    // 记录当天首次打卡时段:9 点前=早起鸟,22 点后=夜猫子
+  if(!g.daySlot) g.daySlot={};
+  if(t in g.daySlot) return;
+  const h=new Date().getHours();
+  g.daySlot[t]= h<9 ? "early" : h>=22 ? "night" : "none";
+}
 function doCheck(btn,undoable=true){
   const g=state.goals.find(x=>x.id===btn.dataset.goal); if(!g) return;
   const t=TODAY();
   if(isDayDone(g,t)) return;
   if(g.freq.type!=="daily"&&g.history.includes(t)) return;      // 每周/每月目标每天只记 1 次打卡
+  markDaySlot(g,t);
   let doneNow=false, line="";
   if(g.freq.type==="daily"&&g.perDay>1){
     const c=(g.counts[t]||0)+1; g.counts[t]=c;
@@ -57,6 +64,7 @@ function undoCheck(){
   const g=state.goals.find(x=>x.id===lastCheck.goalId); const t=lastCheck.date;
   if(g&&g.history.includes(t)){
     g.history=g.history.filter(d=>d!==t); delete g.counts[t];
+    if(g.daySlot) delete g.daySlot[t];          // 当天记录已回滚,时段标记一并撤销
     state.energy=Math.max(0,state.energy-10);
   }
   lastCheck=null; save();
@@ -83,7 +91,26 @@ function showCelebrate(iconSvg,line,sub,undoable=true,title="打卡成功！"){
 $("#celeOk").onclick=()=>$("#celeMask").classList.remove("show");
 $("#celeUndo").onclick=undoCheck;
 $("#celeMask").onclick=e=>{ if(e.target===$("#celeMask")) $("#celeMask").classList.remove("show"); };
-document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ $("#celeMask").classList.remove("show"); closeSheet(); closeProfileSheet(); } });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ $("#celeMask").classList.remove("show"); closeSheet(); closeProfileSheet(); $("#badgeMask").classList.remove("show"); } });
+
+/* 徽章详情:点击任意徽章查看解锁条件与进度 */
+$("#badgeGrid").onclick=e=>{
+  const el=e.target.closest("[data-badge]"); if(!el) return;
+  showBadgeInfo(el.dataset.badge);
+};
+function showBadgeInfo(id){
+  const b=BADGES.find(x=>x.id===id); if(!b) return;
+  const on=unlockedIds.includes(id);
+  const cnt=b.count?Math.max(0,Math.floor(b.count())):0;
+  $("#badgeInfoIcon").innerHTML=ico(b.icon,40);
+  $("#badgeInfoName").textContent=b.name;
+  $("#badgeInfoStatus").textContent=on?`已解锁${cnt>1?` · 已获得 ${cnt} 次`:""}`:"未解锁";
+  $("#badgeInfoDesc").textContent=b.desc||"";
+  $("#badgeInfoProgress").textContent=b.progress?b.progress():"";
+  $("#badgeMask").classList.add("show");
+}
+$("#badgeInfoOk").onclick=()=>$("#badgeMask").classList.remove("show");
+$("#badgeMask").onclick=e=>{ if(e.target===$("#badgeMask")) $("#badgeMask").classList.remove("show"); };
 
 /* 创建/编辑目标弹层 */
 const sheet=$("#createSheet"), scrim=$("#scrim");
@@ -248,6 +275,7 @@ $("#importFile").onchange=e=>{
           createdAt:typeof g.createdAt==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(g.createdAt)?g.createdAt:todayStr(),
           history:Array.isArray(g.history)?g.history.filter(x=>typeof x==="string"&&/^\d{4}-\d{2}-\d{2}$/.test(x)):[],
           counts:g.counts&&typeof g.counts==="object"?g.counts:{},
+          daySlot:g.daySlot&&typeof g.daySlot==="object"?g.daySlot:{},
           earlyFlags:g.earlyFlags&&typeof g.earlyFlags==="object"?g.earlyFlags:{},
         };
       });

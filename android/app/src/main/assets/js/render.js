@@ -105,8 +105,8 @@ function renderAwards(){
     const on=unlockedIds.includes(b.id);
     const cnt=b.count?Math.max(0,Math.floor(b.count())):(on?1:0);
     const showCnt=on&&cnt>1;
-    return `<div class="badge ${on?"":"locked"}" role="img" aria-label="${b.name}${on?`已解锁${showCnt?`,已获得 ${cnt} 次`:""}`:"未解锁"}">
-      <div class="b">${ico(b.icon,26)}${showCnt?`<i class="badge-count">${cnt>99?"99+":cnt}</i>`:""}</div><span>${b.name}</span></div>`;
+    return `<button type="button" class="badge ${on?"":"locked"}" data-badge="${b.id}" aria-label="${b.name}，${b.desc}${on?`，已解锁${showCnt?`,已获得 ${cnt} 次`:""}`:"，未解锁"}">
+      <span class="b">${ico(b.icon,26)}${showCnt?`<i class="badge-count">${cnt>99?"99+":cnt}</i>`:""}</span><span>${b.name}</span></button>`;
   }).join("");
   $("#highlightIcon").innerHTML=`<div style="width:72px;height:72px;border-radius:50%;background:var(--secondary-container);color:var(--on-secondary-container);display:flex;align-items:center;justify-content:center">${ico("medal",34)}</div>`;
   const best=Math.max(0,...state.goals.map(g=>currentStreak(g)));

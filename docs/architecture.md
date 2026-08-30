@@ -43,6 +43,7 @@
       "createdAt": "2026-07-12",
       "history": ["2026-08-29", "..."],            // 打卡过的日期(每日一次型)
       "counts": { "2026-08-30": 6 },               // 计数型目标:当日次数
+      "daySlot": {"2026-08-30": "early"},   // 当天首次打卡时段:early(<9点)/night(≥22点)
       "earlyFlags": {}
     }
   ]
@@ -71,7 +72,8 @@
 | 打卡判定 | domain.js `isDayDone` | daily 看 history/counts;weekly 看当周已打卡天数 ≥ times;monthly 看当月 |
 | 防重复打卡 | main.js `doCheck` | 每日目标达成后按钮变 ✓;每周/每月目标按 `history.includes(today)` 防重(修过可无限刷能量的漏洞) |
 | 撤销 | main.js `undoCheck` | 弹窗内或点击已打卡卡片,按 `lastCheck` 回滚一条记录并扣能量 |
-| 徽章次数 | badges.js | 可重复徽章的次数是**派生值**(如 `floor(累计打卡/50)`),不落库,不会与数据不一致 |
+| 徽章次数 | badges.js | 可重复徽章的次数是**派生值**(如 `floor(累计打卡/50)`),不落库,不会与数据不一致;时段徽章(早起鸟/夜猫子)依据 daySlot 计数,撤销当天记录时同步回退 |
+| 徽章详情 | main.js `showBadgeInfo` | 每枚徽章带 desc/progress,点击(含未解锁)弹出条件与进度 |
 | 补签(已移除) | — | 早期版本有补签卡,黑盒测试发现会把补签写到错误目标上,重构时移除(见 testing-report.md) |
 | Android 壳 | MainActivity.java | `WebViewAssetLoader` 把 `assets/` 映射为 https 域名,localStorage 在 WebView 里才能稳定工作 |
 
