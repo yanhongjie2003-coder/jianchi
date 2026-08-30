@@ -203,7 +203,7 @@ const profileSheet=$("#profileSheet");
 const AVATARS=["auto","🔥","⚡","🌟","🌙","☕","🌱","🏆"];
 let selAvatar="auto";
 function renderAvatarRow(){                          // 首字选项跟随当前名字
-  const autoChar=(state.profile&&state.profile.name||"拾光者").charAt(0);
+  const autoChar=(state.profile&&state.profile.name||"简友").charAt(0);
   $("#avatarRow").innerHTML=AVATARS.map(a=>a==="auto"
     ? `<button class="icon-opt avatar-opt" data-av="auto" aria-label="头像 名字首字">${autoChar}</button>`
     : `<button class="icon-opt avatar-opt" data-av="${a}" aria-label="头像 ${a}">${a}</button>`).join("");
@@ -217,7 +217,7 @@ function openProfileSheet(){
   closeSheet();
   selAvatar=(state.profile&&state.profile.avatar)||"auto";
   if(selAvatar!=="auto"&&!AVATARS.includes(selAvatar)) selAvatar="auto";
-  $("#profileNameInput").value=(state.profile&&state.profile.name)||"拾光者";
+  $("#profileNameInput").value=(state.profile&&state.profile.name)||"简友";
   renderAvatarRow();
   $$("#avatarRow .avatar-opt").forEach(x=>x.classList.toggle("sel",x.dataset.av===selAvatar));
   profileSheet.classList.add("show"); scrim.classList.add("show");
@@ -260,9 +260,9 @@ $("#importFile").onchange=e=>{
       d.flags=d.flags&&typeof d.flags==="object"?d.flags:{};
       delete d.makeupCards;
       d.profile = (d.profile&&typeof d.profile==="object") ? {
-        name:String(d.profile.name||"拾光者").slice(0,12)||"拾光者",
+        name:String(d.profile.name||"简友").slice(0,12)||"简友",
         avatar:(typeof d.profile.avatar==="string"&&d.profile.avatar&&d.profile.avatar!=="拾")?d.profile.avatar.slice(0,4):"auto",
-      } : { name:"拾光者", avatar:"auto" };
+      } : { name:"简友", avatar:"auto" };
       d.goals=d.goals.map(g=>{
         let id=(typeof g.id==="string"&&g.id)?g.id:"g"+Math.random().toString(36).slice(2,8);
         while(seen.has(id)) id="g"+Math.random().toString(36).slice(2,8); seen.add(id);
@@ -294,18 +294,27 @@ $("#clearBtn").onclick=e=>{
   if(!clearArmed){ clearArmed=true; e.target.textContent="再点一次确认"; e.target.style.background="var(--error)"; e.target.style.color="#fff";
     setTimeout(()=>{ clearArmed=false; const b=$("#clearBtn"); b.textContent="清空"; b.style.background=""; b.style.color=""; },3000); return; }
   state={ v:1, seed:state.seed, dark:state.dark, reduceMotion:state.reduceMotion, energy:0, flags:{},
-    profile:state.profile||{ name:"拾光者", avatar:"auto" }, goals:[] };
+    profile:state.profile||{ name:"简友", avatar:"auto" }, goals:[] };
   statsSel=null; unlockedIds=[]; save(); renderAll();
   const b=$("#clearBtn"); b.textContent="清空"; b.style.background=""; b.style.color=""; clearArmed=false;
   toast("已清空全部数据");
 };
-let resetArmed=false;
-$("#resetBtn").onclick=e=>{
-  if(!resetArmed){ resetArmed=true; e.target.textContent="再点一次确认"; e.target.style.background="var(--error)"; e.target.style.color="#fff";
-    setTimeout(()=>{ resetArmed=false; const b=$("#resetBtn"); b.textContent="重置"; b.style.background=""; b.style.color=""; },3000); return; }
-  localStorage.removeItem(STORE_KEY); state=seedState(); unlockedIds=[]; save(); refreshBadges(); refreshTheme(); renderAll();
-  const b=$("#resetBtn"); b.textContent="重置"; b.style.background=""; b.style.color=""; resetArmed=false;
-  toast("已重置为演示数据");
+/* 本机备份:快照存在软件自己的 localStorage 里,不上传 */
+let restoreArmed=false;
+$("#backupSaveBtn").onclick=()=>{
+  if(writeBackup()){ renderMe(); toast("已备份当前数据"); }
+  else toast("备份失败:浏览器存储空间不足");
+};
+$("#backupRestoreBtn").onclick=e=>{
+  const b=readBackup();
+  if(!b) return;
+  if(!restoreArmed){ restoreArmed=true; e.target.textContent="确认恢复?";
+    setTimeout(()=>{ restoreArmed=false; $("#backupRestoreBtn").textContent="恢复"; },3000); return; }
+  restoreArmed=false; $("#backupRestoreBtn").textContent="恢复";
+  state=b.data; statsSel=null;
+  unlockedIds=BADGES.filter(x=>x.cond()).map(x=>x.id);
+  save(); refreshTheme(); renderAll();
+  toast(`已恢复到 ${new Date(b.savedAt).toLocaleString("zh-CN",{hour12:false})} 的备份`);
 };
 
 /* Snackbar */

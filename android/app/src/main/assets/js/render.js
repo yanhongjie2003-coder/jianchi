@@ -115,13 +115,16 @@ function renderAwards(){
 function renderMe(){
   const lv=levelOf(state.energy);
   const prof=state.profile||{};
-  const autoChar=(prof.name||"拾光者").charAt(0);
+  const autoChar=(prof.name||"简友").charAt(0);
   $("#meAvatar").textContent=(prof.avatar&&prof.avatar!=="auto")?prof.avatar:autoChar;
-  $("#meName").textContent=prof.name||"拾光者";
+  $("#meName").textContent=prof.name||"简友";
   $("#meLevel").textContent=`Lv.${lv} · 能量 ${state.energy} · 累计打卡 ${totalCheckins()} 次`;
   $("#profilePencil").innerHTML=ico("pen",18);
   $("#darkToggle").checked= state.dark===null ? window.matchMedia("(prefers-color-scheme: dark)").matches : state.dark;
   $("#motionToggle").checked= state.reduceMotion;
+  const bk=readBackup();
+  $("#backupHint").textContent= bk? `备份于 ${new Date(bk.savedAt).toLocaleString("zh-CN",{hour12:false})}` : "尚未备份";
+  $("#backupRestoreBtn").disabled= !bk;
   $("#seedRow").innerHTML=["#c14a10","#3b7d4f","#3b6fd4","#7c5ce0","#d43b8e"].map(c=>
     `<button class="seed-dot ${c===state.seed?"sel":""}" data-seed="${c}" style="background:${c}" aria-label="主题色 ${c}"></button>`).join("");
   $$("#seedRow .seed-dot").forEach(b=>b.onclick=()=>{ state.seed=b.dataset.seed; save(); refreshTheme(); renderMe(); toast("主题色已更新"); });

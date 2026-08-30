@@ -19,7 +19,6 @@
 - [ ] **localStorage 与版本化**:`shiguang.v1` 键、`JSON.parse` 容错回退种子数据
 - [ ] **派生优于存储**:徽章次数不落库、实时计算,天然不会与数据不一致(badges.js)
 - [ ] **日期处理**:不用日期库,`addDays`/`mondayOf` 十行搞定,ISO 字符串直接比较大小
-- [ ] **确定性随机**:mulberry32 种子随机数,演示数据每天生成结果一致
 - [ ] **事件绑定时机**:innerHTML 重建后重新挂 onclick,闭包捕获 `dataset.goal`
 
 ## 产品与测试思维

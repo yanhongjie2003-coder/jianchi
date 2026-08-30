@@ -1,50 +1,32 @@
 /* ============================================================
  * 简持 · 数据层
- * localStorage 读写、演示种子数据、应用状态 state
+ * localStorage 读写、默认空数据、应用状态 state、本机备份
  * ============================================================ */
 "use strict";
 
-/* ============================ 状态与演示数据 ============================ */
-const STORE_KEY="shiguang.v1";
-function seedState(){
-  const today=todayStr();
-  const rnd=mulberry32(20260830);
-  const mk=(name,icon,freq,perDay,streakNow,longestAt,created,missRate)=>{
-    const hist=[]; let counts={}, daySlot={};
-    for(let i=1;i<=90;i++){
-      const d=addDays(today,-i);
-      let hit=rnd()>missRate;
-      if(hit){
-        hist.push(d);
-        const roll=rnd();                       // 演示数据:部分日期带早/夜时段
-        if(roll<.14) daySlot[d]="early"; else if(roll<.22) daySlot[d]="night";
-        if(perDay>1) counts[d]=perDay;
-      }
-    }
-    // 造出「当前连续 streakNow 天」（截止昨天）+ 更早的一断最长连击
-    for(let i=1;i<=streakNow;i++){ const d=addDays(today,-i); if(!hist.includes(d)) hist.push(d); if(perDay>1) counts[d]=perDay; }
-    for(let i=streakNow+3;i<=streakNow+2+longestAt;i++){ const d=addDays(today,-i); if(!hist.includes(d)) hist.push(d); if(perDay>1) counts[d]=perDay; }
-    // 在两段连击之间以及长连击之后，强制挖出断点，保证连击数字精确
-    [streakNow+1,streakNow+2,streakNow+3+longestAt].forEach(i=>{
-      const d=addDays(today,-i), k=hist.indexOf(d); if(k>-1) hist.splice(k,1); delete counts[d]; delete daySlot[d];
-    });
-    return { id:"g"+Math.random().toString(36).slice(2,8), name, icon, freq, perDay, createdAt:created, history:hist, counts, daySlot, earlyFlags:{} };
-  };
-  const run=mk("晨跑 3 公里","run",{type:"daily"},1,12,21,"2026-07-12",.18);
-  const read=mk("阅读 30 分钟","book",{type:"daily"},1,5,14,"2026-07-20",.2);
-  const water=mk("喝水 8 杯","drop",{type:"daily"},8,3,9,"2026-07-25",.15);
-  const meditate=mk("冥想 10 分钟","lotus",{type:"weekly",times:4},1,2,3,"2026-08-01",.35);
-  meditate.history=meditate.history.filter(d=>d<mondayOf(today));   // 本周清空
-  meditate.history.push(addDays(today,-2),addDays(today,-3));       // 本周已完成 2 次
-  water.counts[today]=5;                                   // 今天进行中 5/8
+/* ============================ 状态与默认数据 ============================ */
+const STORE_KEY="shiguang.v1";       // 当前数据
+const BACKUP_KEY="shiguang.backup";  // 本机备份快照(存在软件自己的存储里,不上传)
+
+function defaultState(){             // 默认全空:从创建第一个目标开始
   return {
     v:1, seed:"#c14a10", dark:null, reduceMotion:false,
-    energy:620, flags:{},
-    profile:{ name:"拾光者", avatar:"auto" },
-    goals:[run,read,water,meditate],
+    energy:0, flags:{},
+    profile:{ name:"简友", avatar:"auto" },   // avatar="auto" 表示渲染名字首字
+    goals:[],
   };
 }
 let state;
-try{ state=JSON.parse(localStorage.getItem(STORE_KEY)) || seedState(); if(!state.goals) throw 0; }
-catch(e){ state=seedState(); }
+try{ state=JSON.parse(localStorage.getItem(STORE_KEY)) || defaultState(); if(!state.goals) throw 0; }
+catch(e){ state=defaultState(); }
 const save=()=>{ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} };
+
+/* ============================ 本机备份 ============================ */
+function readBackup(){               // 读取快照;没有或损坏返回 null
+  try{ const b=JSON.parse(localStorage.getItem(BACKUP_KEY)); return (b&&b.savedAt&&b.data&&Array.isArray(b.data.goals))?b:null; }
+  catch(e){ return null; }
+}
+function writeBackup(){              // 把当前 state 完整快照
+  try{ localStorage.setItem(BACKUP_KEY, JSON.stringify({ savedAt:new Date().toISOString(), data:state })); return true; }
+  catch(e){ return false; }          // 失败多为存储空间不足
+}

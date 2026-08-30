@@ -47,4 +47,3 @@ const todayStr=(d=new Date())=>`${d.getFullYear()}-${String(d.getMonth()+1).padS
 const addDays=(iso,n)=>{ const d=new Date(iso+"T00:00:00"); d.setDate(d.getDate()+n); return todayStr(d); };
 const dowMon=(iso)=>{ const d=new Date(iso+"T00:00:00").getDay(); return (d+6)%7; };        // 周一=0
 const mondayOf=(iso)=>addDays(iso,-dowMon(iso));
-function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0; let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }; }
